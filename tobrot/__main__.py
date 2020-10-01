@@ -88,7 +88,7 @@ if __name__ == "__main__" :
     )
     app.add_handler(cancel_message_handler)
 
-    if not SHOULD_USE_BUTTONS:
+    if SHOULD_USE_BUTTONS == "false":
         LOGGER.info("using COMMANDi mode")
         # LEECH command
         incoming_message_handler = MessageHandler(
