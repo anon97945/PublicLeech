@@ -30,7 +30,7 @@ async def youtube_dl_call_back(bot, update):
     LOGGER.info(update)
     cb_data = update.data
     # youtube_dl extractors
-    tg_send_type, youtube_dl_format, youtube_dl_ext, so_type = cb_data.split("|")
+    tg_send_type, youtube_dl_format, youtube_dl_ext, acodec, vcodec = cb_data.split("|")
     #
     current_user_id = update.message.reply_to_message.from_user.id
     current_message_id = update.message.reply_to_message
@@ -88,8 +88,8 @@ async def youtube_dl_call_back(bot, update):
     if "fulltitle" in response_json:
         description = response_json["fulltitle"][0:1021]
         # escape Markdown and special characters
-    if "description" in response_json:
-        description = response_json["description"][0:1021]
+    #if "description" in response_json:
+        #description = response_json["description"][0:1021]
     LOGGER.info(description)
     #
     tmp_directory_for_each_user = user_working_dir
@@ -113,17 +113,12 @@ async def youtube_dl_call_back(bot, update):
         ]
     else:
         minus_f_format = youtube_dl_format
-
+        #LOGGER.info(acodec)
+        #LOGGER.info(vcodec)
         if "youtu" in youtube_dl_url:
-            for for_mat in response_json["formats"]:
-                format_id = for_mat.get("format_id")
-                if format_id == youtube_dl_format:
-                    acodec = for_mat.get("acodec")
-                    vcodec = for_mat.get("vcodec")
-                    if acodec == "none" or vcodec == "none":
-                        minus_f_format = youtube_dl_format + "+bestaudio"
-                    break
-        elif so_type:
+            if acodec == "noaudio" or vcodec == "novideo":
+                minus_f_format = youtube_dl_format + "+bestaudio"
+        elif acodec == "noaudio":
             minus_f_format = youtube_dl_format + "+bestaudio"
 
         command_to_exec = [
@@ -143,6 +138,9 @@ async def youtube_dl_call_back(bot, update):
     if "hotstar" in youtube_dl_url:
         command_to_exec.append("--geo-bypass-country")
         command_to_exec.append("IN")
+    if "prosieben" in youtube_dl_url:
+        command_to_exec.append("--geo-bypass-country")
+        command_to_exec.append("DE")
     LOGGER.info(command_to_exec)
     start = datetime.now()
     process = await asyncio.create_subprocess_exec(
